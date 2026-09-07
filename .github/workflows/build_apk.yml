@@ -25,11 +25,27 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Auto-generate Clean Android V2 Structure
+        run: |
+          rm -rf android
+          flutter create --org com.zingzone --project-name zingzone --platforms android .
+          
+          # Add AdMob ID directly into the freshly generated clean AndroidManifest
+          python3 -c "
+          path = 'android/app/src/main/AndroidManifest.xml'
+          with open(path, 'r') as f:
+              content = f.read()
+          tag = '<meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"ca-app-pub-3940256099942544~3347511713\"/>'
+          content = content.replace('<application', '<application>\n        ' + tag)
+          with open(path, 'w') as f:
+              f.write(content)
+          "
+
       - name: Install Dependencies
         run: flutter pub get
 
       - name: Build Android APK
-        run: flutter build apk --release --no-shrink
+        run: flutter build apk --release
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
