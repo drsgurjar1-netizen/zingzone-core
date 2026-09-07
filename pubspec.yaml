@@ -17,7 +17,7 @@ dependencies:
   firebase_core: ^3.3.0
   cloud_firestore: ^5.2.0
 
-  # WebRTC Audio & Video (Stable 3.22 compatible)
+  # WebRTC Audio & Video
   flutter_webrtc: ^0.10.8
 
   # UI Icons & Helpers
@@ -30,4 +30,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  
