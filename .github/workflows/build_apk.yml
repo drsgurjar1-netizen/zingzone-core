@@ -25,19 +25,11 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Recreate Android Project with V2 Embedding
-        run: |
-          flutter create . --org com.zingzone --project-name zingzone --platforms android
-
-      - name: Configure AdMob in AndroidManifest
-        run: |
-          sed -i '/<application/a \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/>' android/app/src/main/AndroidManifest.xml
-
       - name: Install Dependencies
         run: flutter pub get
 
       - name: Build Android APK
-        run: flutter build apk --release
+        run: flutter build apk --release --no-shrink
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
