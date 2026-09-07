@@ -31,10 +31,10 @@ jobs:
           rm -rf android
           flutter create --org com.zingzone --project-name zingzone --platforms android .
 
-          # Set Gradle Wrapper to 8.4 (Required by Android Plugin 8.3.2)
+          # Set Gradle wrapper to 8.4
           sed -i 's/gradle-.*-all.zip/gradle-8.4-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties
 
-          # Write correct settings.gradle with Kotlin 1.9.24
+          # Write complete settings.gradle with Kotlin 1.9.24 and AGP 8.3.2
           cat << 'EOF' > android/settings.gradle
           pluginManagement {
               def flutterSdkPath = {
@@ -61,6 +61,20 @@ jobs:
           }
 
           include ":app"
+          EOF
+
+          # Align JVM Target (Java 17) and NDK Version
+          cat << 'EOF' >> android/app/build.gradle
+          android {
+              ndkVersion = "25.1.8937393"
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+              kotlinOptions {
+                  jvmTarget = "17"
+              }
+          }
           EOF
 
           # Inject AdMob Application ID into AndroidManifest
