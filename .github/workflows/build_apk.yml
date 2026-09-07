@@ -19,13 +19,14 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Set up Flutter
+      - name: Set up Flutter (Pinned Stable 3.19.6)
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.19.6'
           channel: 'stable'
           cache: true
 
-      - name: Auto-generate Clean Android V2 Structure
+      - name: Auto-generate Clean Android Structure
         run: |
           rm -rf android
           flutter create --org com.zingzone --project-name zingzone --platforms android .
