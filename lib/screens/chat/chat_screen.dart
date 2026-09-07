@@ -151,8 +151,28 @@ class _ChatScreenState extends State<ChatScreen> {
                     ],
                   ),
                   title: Text(c['name'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)),
-                  subtitle: Text(c['msg'], maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: c['msg'] == 'Typing...' ? const Color(0xFF00FF7F) : Colors.white54, fontSize: 13)),
-                  trailing: Text(c['time'], style: const TextStyle(color: Colors.white38, fontSize: 11)),
+                  subtitle: Text(
+                    c['msg'],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: c['msg'] == 'Typing...' ? const Color(0xFF00FF7F) : Colors.white54, fontSize: 13),
+                  ),
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(c['time'], style: const TextStyle(color: Colors.white38, fontSize: 11)),
+                      const SizedBox(height: 4),
+                      if (c['unread'] > 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: const BoxDecoration(color: Color(0xFF8A2BE2), shape: BoxShape.circle),
+                          child: Text('${c['unread']}', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                        )
+                      else
+                        const SizedBox(height: 16),
+                    ],
+                  ),
                 );
               },
             ),
