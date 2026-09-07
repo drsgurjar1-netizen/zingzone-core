@@ -30,7 +30,12 @@ jobs:
         run: |
           rm -rf android
           flutter create --org com.zingzone --project-name zingzone --platforms android .
+
+          # Upgrade to modern Kotlin (2.1.0) so it satisfies metadata >= 1.9.9999
+          sed -i "s/ext.kotlin_version = .*/ext.kotlin_version = '2.1.0'/g" android/build.gradle
+          sed -i 's/kotlin-gradle-plugin:$kotlin_version/kotlin-gradle-plugin:2.1.0/g' android/build.gradle
           
+          # Add AdMob ID directly into AndroidManifest
           python3 -c "
           path = 'android/app/src/main/AndroidManifest.xml'
           with open(path, 'r') as f:
@@ -52,4 +57,3 @@ jobs:
         with:
           name: ZingZone-Release-APK
           path: build/app/outputs/flutter-apk/app-release.apk
-          
