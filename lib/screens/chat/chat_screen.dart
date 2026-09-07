@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -8,331 +9,276 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  int _selectedTab = 0; // 0: Public, 1: Friends, 2: Squad
-  final TextEditingController _msgController = TextEditingController();
+  String _selectedFilter = 'All';
+  final List<String> _filters = ['All', 'Regular', 'Secret', 'Groups', 'Bots'];
 
-  @override
-  void dispose() {
-    _msgController.dispose();
-    super.dispose();
-  }
+  final List<Map<String, dynamic>> _chats = [
+    {
+      'name': 'Rohan',
+      'msg': 'Bhai kal milte hai 👍',
+      'time': '12:18 PM',
+      'unread': 2,
+      'type': 'Regular',
+      'avatar': 'R',
+      'online': true,
+    },
+    {
+      'name': 'Neha',
+      'msg': '📷 Photo',
+      'time': '11:45 AM',
+      'unread': 1,
+      'type': 'Regular',
+      'avatar': 'N',
+      'online': false,
+    },
+    {
+      'name': 'Family Group',
+      'msg': 'Mummy: Khana kha liya?',
+      'time': '10:30 AM',
+      'unread': 5,
+      'type': 'Groups',
+      'avatar': 'FG',
+      'online': false,
+    },
+    {
+      'name': 'Study Partner',
+      'msg': 'Tum kaha ho abhi?',
+      'time': 'Yesterday',
+      'unread': 3,
+      'type': 'Regular',
+      'avatar': 'SP',
+      'online': false,
+    },
+    {
+      'name': 'Friends Forever',
+      'msg': '😂 Mast wali pic bhej na',
+      'time': 'Yesterday',
+      'unread': 0,
+      'type': 'Groups',
+      'avatar': 'FF',
+      'online': false,
+    },
+    {
+      'name': 'Secret Contact 🔒',
+      'msg': '⏱ This chat self-destructs',
+      'time': 'Yesterday',
+      'unread': 1,
+      'type': 'Secret',
+      'avatar': '🔒',
+      'online': true,
+    },
+    {
+      'name': 'Tech World Bot',
+      'msg': 'New AI tool aaya hai...',
+      'time': 'Yesterday',
+      'unread': 7,
+      'type': 'Bots',
+      'avatar': '🤖',
+      'online': true,
+    },
+    {
+      'name': 'Official Updates',
+      'msg': 'App v2.0 Released',
+      'time': '2 days ago',
+      'unread': 0,
+      'type': 'Bots',
+      'avatar': '📢',
+      'online': false,
+    },
+    {
+      'name': 'Riya',
+      'msg': '🎙 Voice Message (0:12)',
+      'time': '2 days ago',
+      'unread': 0,
+      'type': 'Regular',
+      'avatar': 'R',
+      'online': false,
+    },
+    {
+      'name': 'Crush 😍',
+      'msg': 'Typing...',
+      'time': '2 days ago',
+      'unread': 0,
+      'type': 'Secret',
+      'avatar': 'C',
+      'online': true,
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
+    final filtered = _selectedFilter == 'All'
+        ? _chats
+        : _chats.where((c) => c['type'] == _selectedFilter).toList();
+
     return Scaffold(
-      backgroundColor: const Color(0xFF060709),
-      body: SafeArea(
-        child: Column(
+      backgroundColor: const Color(0xFF090714),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF090714),
+        elevation: 0,
+        leading: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFF8A2BE2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.chat_bubble_outline, color: Colors.white, size: 18),
+          ),
+        ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Top Bar: Header & Controls
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Row(
-                children: [
-                  const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'Chat Hub',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
-                  const Icon(Icons.search_rounded, color: Colors.white, size: 22),
-                  const SizedBox(width: 12),
-                  const Icon(Icons.settings_outlined, color: Colors.white, size: 22),
-                ],
-              ),
-            ),
-
-            // 2. Three Segmented Tabs: Public | Friends | Squad
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              child: Row(
-                children: [
-                  _buildTopTab('Public', 0),
-                  const SizedBox(width: 8),
-                  _buildTopTab('Friends', 1),
-                  const SizedBox(width: 8),
-                  _buildTopTab('Squad', 2),
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
-
-            // 3. Chat List & Floating Context Panel Area
-            Expanded(
-              child: Stack(
-                children: [
-                  ListView(
-                    padding: const EdgeInsets.only(left: 16, right: 120, bottom: 20),
-                    children: [
-                      _buildChatTile(
-                        name: 'Rahul Sharma',
-                        message: 'Kal ka match dekha kya?',
-                        time: '8:45 PM',
-                        unreadCount: 0,
-                        avatarColor: Colors.blueAccent,
-                      ),
-                      _buildChatTile(
-                        name: 'Aman King',
-                        message: 'Bro id bhej na',
-                        time: '8:05 PM',
-                        unreadCount: 2,
-                        avatarColor: Colors.purpleAccent,
-                      ),
-                      _buildSquadRoomTile(
-                        title: 'Squad Room #4',
-                        subtitle: '🎙 Voice Party Active',
-                        activeCount: 4,
-                      ),
-                      _buildChatTile(
-                        name: 'Priya',
-                        message: 'Kya kar rahe ho?',
-                        time: '7:50 PM',
-                        unreadCount: 0,
-                        avatarColor: Colors.tealAccent,
-                        isDoubleTick: true,
-                      ),
-                      _buildSecretChatTile(
-                        name: 'Ghost_9921',
-                        subtitle: '⏱ Auto Delete 10m',
-                        time: '7:32 PM',
-                      ),
-                      _buildChatTile(
-                        name: 'Gaming Friends',
-                        message: 'Video • 4 Members',
-                        time: '6:18 PM',
-                        unreadCount: 0,
-                        avatarColor: Colors.orangeAccent,
-                      ),
-                      _buildChatTile(
-                        name: 'Rohan',
-                        message: 'Nice Bro!',
-                        time: '5:45 PM',
-                        unreadCount: 0,
-                        avatarColor: Colors.pinkAccent,
-                      ),
-                    ],
-                  ),
-
-                  // Floating Quick Context Menu (Right Side)
-                  Positioned(
-                    top: 10,
-                    right: 12,
-                    child: Container(
-                      width: 104,
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF131520).withOpacity(0.92),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white.withOpacity(0.08)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.5),
-                            blurRadius: 10,
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildPanelOption(Icons.person_outline_rounded, 'View Profile'),
-                          _buildPanelOption(Icons.volume_off_outlined, 'Mute'),
-                          _buildPanelOption(Icons.block_flipped, 'Block'),
-                          const SizedBox(height: 4),
-                          // Highlighted Secret Chat Button
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF7B2CBF),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Row(
-                              children: [
-                                Icon(Icons.lock_outline_rounded, color: Colors.white, size: 12),
-                                SizedBox(width: 4),
-                                Expanded(
-                                  child: Text(
-                                    'Secret Chat',
-                                    style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          _buildPanelOption(Icons.flag_outlined, 'Report'),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // 4. Bottom Chat Input Bar
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0D0F18),
-                border: Border(top: BorderSide(color: Colors.white.withOpacity(0.06))),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF1B1E2E),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.add, color: Colors.white, size: 20),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Container(
-                      height: 38,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF161826),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: TextField(
-                        controller: _msgController,
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
-                        decoration: const InputDecoration(
-                          hintText: 'Type a message...',
-                          hintStyle: TextStyle(color: Colors.white38, fontSize: 12),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.only(bottom: 10),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.mic_none_rounded, color: Colors.white70, size: 22),
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(colors: [Color(0xFF8A2BE2), Color(0xFF5A189A)]),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.send_rounded, color: Colors.white, size: 16),
-                  ),
-                ],
-              ),
-            ),
+            Text('Chat', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
+            Text('Connect • Talk • Share', style: TextStyle(fontSize: 11, color: Colors.white54)),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildTopTab(String title, int index) {
-    bool isSelected = _selectedTab == index;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedTab = index),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF7B2CBF) : const Color(0xFF131522),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.white.withOpacity(isSelected ? 0.0 : 0.06)),
-        ),
-        child: Text(
-          title,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.white60,
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search, color: Colors.white),
+            onPressed: () {},
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildChatTile({
-    required String name,
-    required String message,
-    required String time,
-    required int unreadCount,
-    required Color avatarColor,
-    bool isDoubleTick = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: avatarColor.withOpacity(0.3),
-            child: Text(name[0], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
-                const SizedBox(height: 2),
-                Text(message, style: const TextStyle(color: Colors.white60, fontSize: 11), maxLines: 1),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(time, style: const TextStyle(color: Colors.white38, fontSize: 9)),
-              const SizedBox(height: 4),
-              if (unreadCount > 0)
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(color: Color(0xFF7B2CBF), shape: BoxShape.circle),
-                  child: Text('$unreadCount', style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
-                )
-              else if (isDoubleTick)
-                const Icon(Icons.done_all_rounded, color: Colors.blueAccent, size: 14),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+            color: const Color(0xFF1B1633),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            onSelected: (val) {
+              if (val == 'Privacy') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PrivacyScreen()),
+                );
+              }
+            },
+            itemBuilder: (ctx) => [
+              _menuItem(Icons.group_add_outlined, 'New Group'),
+              _menuItem(Icons.campaign_outlined, 'Broadcast'),
+              _menuItem(Icons.devices, 'Linked Devices'),
+              _menuItem(Icons.star_border, 'Starred Messages'),
+              _menuItem(Icons.lock_outline, 'Privacy', highlight: true),
+              _menuItem(Icons.settings_outlined, 'Settings'),
             ],
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSquadRoomTile({
-    required String title,
-    required String subtitle,
-    required int activeCount,
-  }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: const Color(0xFF141726),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF00F0FF).withOpacity(0.2)),
-      ),
-      child: Row(
+      body: Column(
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: const BoxDecoration(
-              color: Color(0xFF00F0FF),
-              shape: BoxShape.circle,
+          // Filter Pills
+          SizedBox(
+            height: 48,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              itemCount: _filters.length,
+              itemBuilder: (ctx, i) {
+                final f = _filters[i];
+                final isSel = f == _selectedFilter;
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedFilter = f),
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isSel ? const Color(0xFF8A2BE2) : const Color(0xFF1B1633),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Center(
+                      child: Text(
+                        f,
+                        style: TextStyle(
+                          color: isSel ? Colors.white : Colors.white70,
+                          fontSize: 12,
+                          fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
-            child: const Icon(Icons.headset_mic_rounded, color: Colors.black, size: 18),
           ),
-          const SizedBox(width: 10),
+
+          // Chat List
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                Text(subtitle, style: const TextStyle(color: Color(0xFF00F0FF), fontSize: 10)),
-              ],
+            child: ListView.builder(
+              itemCount: filtered.length,
+              itemBuilder: (ctx, i) {
+                final c = filtered[i];
+                return ListTile(
+                  onTap: () {
+                    if (c['type'] == 'Secret') {
+                      Navigator.push(ctx, MaterialPageRoute(builder: (_) => SecretChatRoom(name: c['name'])));
+                    } else if (c['type'] == 'Groups') {
+                      Navigator.push(ctx, MaterialPageRoute(builder: (_) => GroupChatRoom(name: c['name'])));
+                    } else {
+                      Navigator.push(ctx, MaterialPageRoute(builder: (_) => RegularChatRoom(name: c['name'])));
+                    }
+                  },
+                  leading: Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: c['type'] == 'Secret'
+                            ? const Color(0xFF8A2BE2)
+                            : const Color(0xFF262042),
+                        child: Text(
+                          c['avatar'],
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      if (c['online'] == true)
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF00FF7F),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: const Color(0xFF090714), width: 2),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  title: Text(
+                    c['name'],
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15),
+                  ),
+                  subtitle: Text(
+                    c['msg'],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: c['msg'] == 'Typing...' ? const Color(0xFF00FF7F) : Colors.white54,
+                      fontSize: 13,
+                    ),
+                  ),
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(c['time'], style: const TextStyle(color: Colors.white38, fontSize: 11)),
+                      const SizedBox(height: 4),
+                      if (c['unread'] > 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF8A2BE2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            '${c['unread']}',
+                            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                        )
+                      else
+                        const SizedBox(height: 16),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -340,53 +286,300 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildSecretChatTile({
-    required String name,
-    required String subtitle,
-    required String time,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+  PopupMenuItem<String> _menuItem(IconData icon, String label, {bool highlight = false}) {
+    return PopupMenuItem<String>(
+      value: label,
       child: Row(
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.purple.withOpacity(0.2),
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF7B2CBF), width: 1.5),
-            ),
-            child: const Icon(Icons.lock_rounded, color: Color(0xFF9D4EDD), size: 18),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-                const SizedBox(height: 2),
-                Text(subtitle, style: const TextStyle(color: Color(0xFF9D4EDD), fontSize: 10, fontWeight: FontWeight.w600)),
-              ],
+          Icon(icon, color: highlight ? const Color(0xFFB388FF) : Colors.white70, size: 20),
+          const SizedBox(width: 12),
+          Text(
+            label,
+            style: TextStyle(
+              color: highlight ? const Color(0xFFB388FF) : Colors.white,
+              fontWeight: highlight ? FontWeight.bold : FontWeight.normal,
             ),
           ),
-          Text(time, style: const TextStyle(color: Colors.white38, fontSize: 9)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPanelOption(IconData icon, String label) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.white70, size: 13),
-          const SizedBox(width: 6),
-          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 10)),
         ],
       ),
     );
   }
 }
 
+// -------------------------------------------------------------
+// PRIVACY SCREEN
+// -------------------------------------------------------------
+class PrivacyScreen extends StatelessWidget {
+  const PrivacyScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF090714),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF090714),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text('Privacy', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _tile(Icons.visibility_off, 'Hide Chats', 'Your hidden chats are safe'),
+          _tile(Icons.lock, 'Secret Chat', 'End-to-end encrypted'),
+          _tile(Icons.timer, 'Disappearing Messages', 'Auto delete after time'),
+          _tile(Icons.fingerprint, 'App Lock', 'Fingerprint / PIN'),
+          _tile(Icons.cloud_upload, 'Chat Backup', 'Backup your chats'),
+          _tile(Icons.block, 'Blocked Contacts', 'View blocked users'),
+          const SizedBox(height: 24),
+
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF2E1256), Color(0xFF140D2E)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              border: Border.all(color: const Color(0xFF8A2BE2).withOpacity(0.5)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Hidden Chat Access', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                const Text('Only you can see these chats', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF8A2BE2),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const HiddenPinScreen()));
+                    },
+                    icon: const Icon(Icons.visibility_off, color: Colors.white, size: 18),
+                    label: const Text('Enter Hidden Section', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tile(IconData icon, String title, String sub) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1B1633),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF2E2452),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: const Color(0xFFB388FF), size: 22),
+        ),
+        title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+        subtitle: Text(sub, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+        trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white38, size: 14),
+      ),
+    );
+  }
+}
+
+// -------------------------------------------------------------
+// PIN & BIOMETRIC SCREEN
+// -------------------------------------------------------------
+class HiddenPinScreen extends StatefulWidget {
+  const HiddenPinScreen({super.key});
+
+  @override
+  State<HiddenPinScreen> createState() => _HiddenPinScreenState();
+}
+
+class _HiddenPinScreenState extends State<HiddenPinScreen> {
+  String _pin = '';
+
+  void _press(String digit) {
+    if (_pin.length < 4) {
+      setState(() => _pin += digit);
+      if (_pin.length == 4) {
+        if (_pin == '7788') {
+          _unlockSuccess();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Wrong PIN! Try 7788 or tap Fingerprint'), backgroundColor: Colors.red),
+          );
+          setState(() => _pin = '');
+        }
+      }
+    }
+  }
+
+  void _unlockSuccess() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const HiddenChatRoom()),
+    );
+  }
+
+  void _biometricAuth() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Biometric Verified! 🛡️'), backgroundColor: Colors.green),
+    );
+    _unlockSuccess();
+  }
+
+  void _backspace() {
+    if (_pin.isNotEmpty) {
+      setState(() => _pin = _pin.substring(0, _pin.length - 1));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF090714),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.security, color: Color(0xFF8A2BE2), size: 60),
+          const SizedBox(height: 12),
+          const Text('Hidden Section', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 6),
+          const Text('Enter secret PIN or touch fingerprint', style: TextStyle(color: Colors.white54, fontSize: 13)),
+          const SizedBox(height: 24),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(4, (i) {
+              final filled = i < _pin.length;
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                width: 16,
+                height: 16,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: filled ? const Color(0xFF8A2BE2) : Colors.transparent,
+                  border: Border.all(color: const Color(0xFF8A2BE2), width: 2),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 36),
+
+          for (var r = 0; r < 3; r++)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  for (var c = 1; c <= 3; c++)
+                    _keyBtn('${r * 3 + c}'),
+                ],
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _iconBtn(Icons.fingerprint, _biometricAuth),
+                _keyBtn('0'),
+                _iconBtn(Icons.backspace_outlined, _backspace),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _keyBtn(String txt) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(40),
+      onTap: () => _press(txt),
+      child: Container(
+        width: 65,
+        height: 65,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1B1633),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white10),
+        ),
+        child: Text(txt, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+
+  Widget _iconBtn(IconData icon, VoidCallback tap) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(40),
+      onTap: tap,
+      child: Container(
+        width: 65,
+        height: 65,
+        alignment: Alignment.center,
+        child: Icon(icon, color: const Color(0xFF00FF7F), size: 30),
+      ),
+    );
+  }
+}
+
+// -------------------------------------------------------------
+// CHAT ROOMS
+// -------------------------------------------------------------
+class RegularChatRoom extends StatelessWidget {
+  final String name;
+  const RegularChatRoom({super.key, required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    return _InteractiveChatRoom(
+      name: name,
+      status: 'online',
+      themeColor: const Color(0xFF1E88E5),
+      initialMessages: [
+        {'text': 'Bhai kal milte hai 👍', 'me': false, 'time': '12:16'},
+        {'text': 'Haan bro pakka', 'me': true, 'time': '12:20'},
+        {'text': 'Kaha?', 'me': false, 'time': '12:21'},
+        {'text': 'College ke paas', 'me': true, 'time': '12:22'},
+      ],
+    );
+  }
+}
+
+class SecretChatRoom extends StatelessWidget {
+  final String name;
+  const SecretChatRoom({super.key, required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    return _InteractiveChatRoom(
+      name: name,
+      status: 'Online 🔒',
+      themeColor: const Color(0xFF8A2BE2),
+      isSecret: true,
+      banner: '🔒 End-to-end encrypted. Messages auto-destruct in 30s.',
+      initialMessages: [
+        {'text': 'Tu free hai?', 'me': false, 'time': '12
