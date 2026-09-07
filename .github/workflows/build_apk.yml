@@ -31,11 +31,36 @@ jobs:
           rm -rf android
           flutter create --org com.zingzone --project-name zingzone --platforms android .
 
-          # Upgrade to modern Kotlin (2.1.0) so it satisfies metadata >= 1.9.9999
-          sed -i "s/ext.kotlin_version = .*/ext.kotlin_version = '2.1.0'/g" android/build.gradle
-          sed -i 's/kotlin-gradle-plugin:$kotlin_version/kotlin-gradle-plugin:2.1.0/g' android/build.gradle
-          
-          # Add AdMob ID directly into AndroidManifest
+          # Write correct settings.gradle with Kotlin 1.9.24
+          cat << 'EOF' > android/settings.gradle
+          pluginManagement {
+              def flutterSdkPath = {
+                  def properties = new Properties()
+                  file("local.properties").withInputStream { properties.load(it) }
+                  def flutterSdkPath = properties.getProperty("flutter.sdk")
+                  assert flutterSdkPath != null, "flutter.sdk not set in local.properties"
+                  return flutterSdkPath
+              }()
+
+              includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+
+          plugins {
+              id "dev.flutter.flutter-plugin-loader" version "1.0.0"
+              id "com.android.application" version "8.3.2" apply false
+              id "org.jetbrains.kotlin.android" version "1.9.24" apply false
+          }
+
+          include ":app"
+          EOF
+
+          # Inject AdMob Application ID into AndroidManifest
           python3 -c "
           path = 'android/app/src/main/AndroidManifest.xml'
           with open(path, 'r') as f:
