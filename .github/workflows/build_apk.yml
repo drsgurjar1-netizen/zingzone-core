@@ -30,7 +30,6 @@ jobs:
           rm -rf android
           flutter create --org com.zingzone --project-name zingzone --platforms android .
           
-          # Add AdMob ID directly into AndroidManifest
           python3 -c "
           path = 'android/app/src/main/AndroidManifest.xml'
           with open(path, 'r') as f:
@@ -44,15 +43,6 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      - name: Fix Missing Namespaces in Legacy Plugins
-        run: |
-          # Inject namespace directly into flutter_jailbreak_detection build.gradle
-          for f in $(find /home/runner/.pub-cache/ -name "build.gradle" 2>/dev/null); do
-            if grep -q "com.android.library" "$f" && ! grep -q "namespace" "$f"; then
-              sed -i '/android {/a \    namespace "com.gabulabs.flutterjailbreakdetection"' "$f"
-            fi
-          done
-
       - name: Build Android APK
         run: flutter build apk --release
 
@@ -61,3 +51,4 @@ jobs:
         with:
           name: ZingZone-Release-APK
           path: build/app/outputs/flutter-apk/app-release.apk
+          
